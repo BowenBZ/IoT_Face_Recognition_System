@@ -54,8 +54,7 @@ smarter house with low cost.
 * IFTTT settings
     * Signup an account in [IFTTT](https://IFTTT.com) 
       website.
-    * Go to `MyApplets` - `New Applet` - `this`, choose the `Webhooks`
-      - `Revice a web request`, and give the 
+    * Go to `MyApplets` - `New Applet` - `this`, choose the `Webhooks` - `Revice a web request`, and give the 
       event name and click `Create trigger`.
     * choose `that` - `Face Messenger` - `Send Message`, 
       and type what you want to send to your mobile, then click
