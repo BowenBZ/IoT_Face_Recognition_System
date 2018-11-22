@@ -1,6 +1,5 @@
-# Home Assistance Robot
-This robot is designed to help older people get a 
-smarter house with low cost.
+# Home Assistance Robot Web Server Version
+This Version can run in Ubuntu system, and can be server as a web server. This robot is designed to help older people get a smarter house with low cost.
 
 ## Function
 #### Face Detection
@@ -25,31 +24,11 @@ smarter house with low cost.
   When strangers come to the house, a message
   via Facebook Messager is given to their
   mobiles.
-  
-* Unlock Control  
-  When the house owner get back home, an unlock key
-  image will be shown in the screen.
+
 
 ## Install
 #### Software Requirments
 * Install [face_recognition](https://github.com/ageitgey/face_recognition) package  
-  To install this package in Windows
-    * if you already have the `cmake` compiler environment,
-        you can use following command to install the package
-        ```
-        pip install dlib
-        pip install face_recognition
-        ```
-    * if you don't have the `camke` compiler environment, you can
-    go to [here](https://pypi.org/simple/dlib/) to download the
-    dlb.whl file and install it with `pip`. Later you can use
-        ```
-        pip install face_recognition
-        ```
-        to install `face_recognition` package.
-        
-    I personal recommend you can use the `virtualenv` to create a virtual 
-    python environment, [instruction](http://maxlai.cc/2018/08/24/windows-python36-quickly-install-face-recognition/) is here. 
 
 * IFTTT settings
     * Signup an account in [IFTTT](https://IFTTT.com) 
