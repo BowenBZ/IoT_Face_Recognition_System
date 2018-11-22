@@ -36,7 +36,7 @@ def check_status():
 if __name__ == "__main__":
     # Configure the face recognition process
     face_rgn = FaceProcess(resize_frame=0.2, recognize_threshold=0.6, recognize_mode=0,
-                           detect_interval=3, person_store_number=10, filename=filename)
+                           detect_interval=1, person_store_number=10, filename=filename)
     face_rgn.load_database()
 
     # Configure the camera
@@ -58,23 +58,24 @@ if __name__ == "__main__":
 
     while True:
         # Grab a single frame from the camera
-        ret, frame = camera.read()
+        if face_rgn.saving is False:
+	        ret, frame = camera.read()
 
-        # Recognize people and show result
-        face_rgn.detect_people(frame=frame)
-        face_rgn.add_content_to_frame(frame=frame)
+	        # Recognize people and show result
+	        face_rgn.detect_people(frame=frame)
+	        face_rgn.add_content_to_frame(frame=frame)
 
-        # Send message according to the detection results
-        if flags[stranger] is True and "Unknown" in face_rgn.face_names:
-            flags[stranger] = False
-            th.Thread(target=send_message, args=[url_stranger]).start()
+	        # Send message according to the detection results
+	        if flags[stranger] is True and "Unknown" in face_rgn.face_names:
+	            flags[stranger] = False
+	            th.Thread(target=send_message, args=[url_stranger]).start()
 
-        # Call themselves if package is detected
-        if ["Unknown"] * len(face_rgn.face_names) != face_rgn.face_names:
-            frame[0: key_image.shape[0], 0: key_image.shape[1], :] = key_image
+	        # Call themselves if package is detected
+	        # if ["Unknown"] * len(face_rgn.face_names) != face_rgn.face_names:
+	        #     frame[0: key_image.shape[0], 0: key_image.shape[1], :] = key_image
 
-        # Display the resulting image
-        cv2.imshow('Detection', frame)
+	        # Display the resulting image
+	        cv2.imshow('Detection', frame)
 
         # This allows you to stop the script from looping by pressing 'q'
         key = cv2.waitKey(5)
@@ -82,6 +83,7 @@ if __name__ == "__main__":
             break
         elif key == ord('s'):   # S to save
             th.Thread(target=face_rgn.save_database, args=[camera]).start()
+            face_rgn.saving = True
         elif key == ord('r'):   # R to remove
             th.Thread(target=face_rgn.delete_data).start()
 

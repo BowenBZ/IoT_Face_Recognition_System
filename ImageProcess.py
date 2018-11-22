@@ -35,16 +35,17 @@ class FaceProcess:
         self._detect_sign = False           # Control the detect thread by event
         self._thread_sign = True            # Control the detect thread mainly
 
+        self.saving = False
+
     # Save data to .csv file
     def save_database(self, cap_scan):
         # Let the user to input the name
         name = get_input("Input", "Please input your name:")
         if not name:
+            self.saving = False
             return
 
         # Open a camera
-        cv2.namedWindow('Scan your face')
-        cv2.moveWindow('Scan your face', 20, 20)
         cnt = 0
 
         # Store "person_store_number" numbers encodings of the user to store_face_encodings
@@ -59,13 +60,6 @@ class FaceProcess:
                 cnt = cnt + 1
             if cnt >= self._person_store_number:
                 break
-            cv2.imshow('Scan your face', frame)
-            if cv2.waitKey(5) & 0xFF == ord('t'):
-                break
-
-        # Release the capture
-        # cap_scan.release()
-        cv2.destroyWindow('Scan your face')
 
         # Decide which method should be used
         data_store = data
@@ -89,6 +83,9 @@ class FaceProcess:
 
         # Reload data from file
         self.load_database()
+
+        # End the saving process
+        self.saving = False
 
     # Delete existing data with specific name
     def delete_data(self):
@@ -123,10 +120,14 @@ class FaceProcess:
         self._file_data = np.array(list(csv.reader(file, delimiter=',')))
         file.close()
 
-        self._known_face_names = self._file_data[:, 0]
-        self._known_face_encodings = []
-        for i in range(self._file_data.shape[0]):
-            self._known_face_encodings.append(self._file_data[i, 1:].astype(np.float))
+        if(self._file_data.shape[0] != 0):
+            self._known_face_names = self._file_data[:, 0]
+            self._known_face_encodings = []
+            for i in range(self._file_data.shape[0]):
+                self._known_face_encodings.append(self._file_data[i, 1:].astype(np.float))
+        else:
+            self._known_face_names = []
+            self._known_face_encodings = []
 
         self._detect_sign = True
 
