@@ -123,10 +123,14 @@ class FaceProcess:
         self._file_data = np.array(list(csv.reader(file, delimiter=',')))
         file.close()
 
-        self._known_face_names = self._file_data[:, 0]
-        self._known_face_encodings = []
-        for i in range(self._file_data.shape[0]):
-            self._known_face_encodings.append(self._file_data[i, 1:].astype(np.float))
+        if self._file_data.shape[0] != 0:
+            self._known_face_names = self._file_data[:, 0]
+            self._known_face_encodings = []
+            for i in range(self._file_data.shape[0]):
+                self._known_face_encodings.append(self._file_data[i, 1:].astype(np.float))
+        else:
+            self._known_face_names = []
+            self._known_face_encodings = []
 
         self._detect_sign = True
 
