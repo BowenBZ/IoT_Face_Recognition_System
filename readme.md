@@ -1,13 +1,10 @@
 # Home Assistance Robot Web Server Version
-This Version can run in Ubuntu system, and can be server as a web server. This robot is designed to help older people get a smarter house with low cost.
+This version is a web server based on flask. Users can use HTTP Post command to post their images and get back the positions of the users' faces and their names.
 
 ## Function
 #### Face Detection
 * Store Your Faces  
-  When the program runs, people can press
-  * key `s` to store and restore their faces
-  * key `r` to remove the faces with specific name   
-  
+
 * Faces Detection  
   The program can detect faces in the camera and use
   square the around the faces. Multi-faces are supported.
@@ -67,9 +64,6 @@ This Version can run in Ubuntu system, and can be server as a web server. This r
     Resize the frame when handle the frame. Vary from 0 to 1.
   * recognize_threshold   
     The threshold to recognize people. Vary from 0 to 1.
-  * recognize_mode  
-    0 means to recognize when the number of faces change; 1 
-    means to recognize every detect_interval frames. 
   * detect_interval  
     handle the image every detect_interval frames. Has no function
     if recognize_mode is set to 0
