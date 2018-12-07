@@ -21,67 +21,43 @@ class FaceProcess:
         self._known_face_encodings = []     # Stores known face encodings
         self._known_face_names = []         # Stores known face names
         self._file_data = []                # Stores file data read from .csv file
+        self._small_frame = []
 
         # detection results
         self._face_locations = []           # Stores face locations that been detected
         self._face_names = []               # Stores face names that been recognized
 
-
     # Save data to .csv file
-    # def save_database(self, cap_scan):
-    #     # Let the user to input the name
-    #     # name = get_input("Input", "Please input your name:")
-    #     name = "Bowen"
-    #     if not name:
-    #         self.saving = False
-    #         return
-    #
-    #     # Open a camera
-    #     cnt = 0
-    #
-    #     # Store "person_store_number" numbers encodings of the user to store_face_encodings
-    #     data = []
-    #     while True:
-    #         ret, frame = cap_scan.read()
-    #         small_frame = cv2.resize(frame, (0, 0), fx=self._resize, fy=self._resize)
-    #         self._face_locations = face_recognition.face_locations(small_frame)
-    #         face_encodings = face_recognition.face_encodings(small_frame, self._face_locations)
-    #         if face_encodings:
-    #             data.append(np.insert(np.array(face_encodings).astype(np.str), 0, name))
-    #             cnt = cnt + 1
-    #         if cnt >= self._person_store_number:
-    #             break
+    def save_database(self, filename, name, frame):
+        if not name:
+            return
 
-        # # Decide which method should be used
-        # data_store = data
-        # if name in self._known_face_names:
-        #     # Open the file and rewrite the content
-        #     file = open(self._filename, 'w')
-        #     for i in range(len(self._known_face_names)):
-        #         if self._known_face_names[i] != name:
-        #             tmp = np.insert(np.array(self._known_face_encodings[i]).astype(np.str),
-        #                             0, self._known_face_names[i])
-        #             data_store.append(tmp)
-        # else:
-        #     # Open the file to add content
-        #     file = open(self._filename, 'a')
-        #
-        # # Write file
-        # writer = csv.writer(file, delimiter=',', lineterminator='\n')
-        # for content in data_store:
-        #     writer.writerow(content)
-        # file.close()
-        #
-        # # Reload data from file
-        # self.load_database()
-        #
-        # # End the saving process
-        # self.saving = False
+        self.delete_data(filename, name)
+
+        face_locations = face_recognition.face_locations(frame)
+        face_encoding = face_recognition.face_encodings(frame, face_locations)
+
+        if not face_encoding:
+            return False
+
+        data = np.insert(np.array(face_encoding).astype(np.str), 0, name)
+
+        # Decide which method should be used
+        data_store = data
+        file = open(filename, 'a')
+
+        # Write file
+        writer = csv.writer(file, delimiter=',', lineterminator='\n')
+        writer.writerow(data_store)
+        file.close()
+
+        # Reload data from file
+        self.load_database(filename)
+
+        return True
 
     # Delete existing data with specific name
-    def delete_data(self, filename):
-        # name = get_input("Input", "Please input the name you want to delete:")
-        name = "Bowen"
+    def delete_data(self, filename, name):
         if not name:
             return
 
@@ -128,43 +104,40 @@ class FaceProcess:
             self._cnt = 0
 
             # resize the frame and convert the frame
-            small_frame = cv2.resize(frame, (0, 0), fx=self._resize, fy=self._resize)
+            self._small_frame = cv2.resize(frame, (0, 0), fx=self._resize, fy=self._resize)
 
             # Find all the faces and face encodings in the current frame of video
-            self._face_locations = face_recognition.face_locations(small_frame)
+            self._face_locations = face_recognition.face_locations(self._small_frame)
 
-            # If _mode was set 1, recognize people with detect
-            # self._recognize_people_core(small_frame)
+        return self._get_detected_answer()
 
     # recognize the people's identity
-    def _recognize_people_core(self, frame):
+    def recognize_people(self):
         # Get the encodings of faces detected
-        face_encodings = face_recognition.face_encodings(frame, self._face_locations)
+        face_encodings = face_recognition.face_encodings(self._small_frame, self._face_locations)
 
         # Match with the database and store the names
         self._face_names = []
         for face_encoding in face_encodings:
             # See if the face is a match for the known face(s)
-            name = "Unknown"
+            name = "Stranger"
             matches = face_recognition.compare_faces(self._known_face_encodings, face_encoding,
                                                      self._compare_threshold)
 
             # If a match was found in known_face_encodings, use the most match one
             if True in matches:
-                if len(matches) > 1:
-                    face_distances = face_recognition.face_distance(self._known_face_encodings,
-                                                                    face_encoding)
-                    most_match_index = np.where(face_distances == min(face_distances))[0][0]
-                    name = self._known_face_names[most_match_index]
-                else:
-                    first_match_index = matches.index(True)
-                    name = self._known_face_names[first_match_index]
+                face_distances = face_recognition.face_distance(self._known_face_encodings,
+                                                                face_encoding)
+                most_match_index = np.where(face_distances == min(face_distances))[0][0]
+                name = self._known_face_names[most_match_index]
 
             # Add name to face_names
             self._face_names.append(name)
 
+        return self._face_names
+
     # Display the result in the frame
-    def get_detected_ans(self):
+    def _get_detected_answer(self):
         # Reset the face_positions_percent
         face_positions_return = []
         # Transfer the results
@@ -180,5 +153,5 @@ class FaceProcess:
                                          bottom,
                                          right])
 
-        return self._face_names, face_positions_return
+        return face_positions_return
 

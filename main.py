@@ -48,8 +48,9 @@ def check_status():
 
 
 # Configure the face recognition process
-face_rgn = FaceProcess(resize_frame=1, recognize_threshold=0.6, detect_interval=1)
-face_rgn.load_database('dataset/known_face.csv')
+filename = 'dataset/known_face.csv'
+face_rgn = FaceProcess(resize_frame=1, recognize_threshold=0.6, detect_interval=0)
+face_rgn.load_database(filename)
 
 # Configure the camera
 # camera = cv2.VideoCapture(0)
@@ -87,23 +88,46 @@ def detect():
     if request.method == 'POST':
         # Get news from POST
         news = json.loads(request.data)
-        imgurl = news['img'].split(',')[1]
+        img_url = news['img'].split(',')[1]
 
         # Convert url to image
-        image_bytes = io.BytesIO(base64.b64decode(imgurl))
-        im = Image.open(image_bytes)
-        img = np.array(im)
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        img = url_to_image(img_url)
 
         # Detect people and recognize them
-        face_rgn.detect_people(gray)
-        face_names, face_positions = face_rgn.get_detected_ans()
+        face_positions = face_rgn.detect_people(img)
 
         # Return the results
-        new_data = {"face_names": face_names, "face_pos": face_positions}
-        return json.dumps(new_data)
+        face_pos = {"face_pos": face_positions}
+        return json.dumps(face_pos)
     else:
-        return "MY GET!"
+        face_names = face_rgn.recognize_people()
+        face_nam = {"face_name": face_names}
+
+        return json.dumps(face_nam)
+
+
+@app.route('/save', methods=['POST'])
+def save_remove():
+    # Get news from POST
+    news = json.loads(request.data)
+    status = False
+    if news["mode"] == "remove":
+        face_rgn.delete_data(filename, news["name"])
+        status = True
+    elif news["mode"] == "add":
+        img_url = news['img'].split(',')[1]
+        img = url_to_image(img_url)
+        status = face_rgn.save_database(filename, news["name"], img)
+
+    rtn_message = {"status": status}
+    return json.dumps(rtn_message)
+
+
+def url_to_image(img_url):
+    image_bytes = io.BytesIO(base64.b64decode(img_url))
+    im = Image.open(image_bytes)
+    img = np.array(im)
+    return cv2.cvtColor(img, cv2.COLOR_RGBA2RGB)
 
 
 if __name__ == "__main__":
