@@ -5,11 +5,12 @@ import threading as th
 import time
 import numpy as np
 from flask import Flask
-from firebase import MyDataBase
 from flask import request
 from flask_cors import *
 import json
 from PIL import Image
+import base64
+import io
 
 # If `entrypoint` is not defined in app.yaml, App Engine will look for an app
 # called `app` in `main.py`.
@@ -47,17 +48,13 @@ def check_status():
 
 
 # Configure the face recognition process
-face_rgn = FaceProcess(resize_frame=1, recognize_threshold=0.6,
-                       detect_interval=1, person_store_number=10, filename=filename)
-face_rgn.load_database()
+face_rgn = FaceProcess(resize_frame=1, recognize_threshold=0.6, detect_interval=1)
+face_rgn.load_database('dataset/known_face.csv')
 
 # Configure the camera
-camera = cv2.VideoCapture(0)
-camera.set(cv2.CAP_PROP_FRAME_WIDTH, 1280.0)
-camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 720.0)
-
-# Configure the database
-my_database = MyDataBase()
+# camera = cv2.VideoCapture(0)
+# camera.set(cv2.CAP_PROP_FRAME_WIDTH, 1280.0)
+# camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 720.0)
 
 # Check the flags
 # th.Thread(target=check_status).start()
@@ -72,44 +69,41 @@ def root():
     return "Hello"
 
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
+@app.route('/test', methods=['POST'])
+def test():
+    print(request.data)
+    news = dict(request.form)
+    image_bytes = io.BytesIO(base64.b64decode(news['img'].split(',')[1]))
+    im = Image.open(image_bytes)
+    image = np.array(im)
+
+    print(image)
+
+    return "MY POST"
+
+
+@app.route('/detect', methods=['GET', 'POST'])
+def detect():
     if request.method == 'POST':
-        # Get the data from request
-        ans = dict(request.form)
+        # Get news from POST
+        news = json.loads(request.data)
+        imgurl = news['img'].split(',')[1]
 
-        # Format the data
-        tmp = ans['img'][1:-2].split(',')
-        img_list = list(map(float, tmp))
-        img_list = list(map(int, img_list))
-        width = int(ans['width'])
-        height = int(ans['height'])
-
-        # Transfer data to img
-        img = np.reshape(np.array(img_list, dtype=np.uint8), (height, width))
-        # img = np.array([img, img, img])
-        # cv2.imwrite('test.png', img)
-
-        # print(img)
+        # Convert url to image
+        image_bytes = io.BytesIO(base64.b64decode(imgurl))
+        im = Image.open(image_bytes)
+        img = np.array(im)
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
         # Detect people and recognize them
-        face_rgn.detect_people(img)
-        face_names, face_positions = face_rgn.get_faces_info(img)
+        face_rgn.detect_people(gray)
+        face_names, face_positions = face_rgn.get_detected_ans()
 
         # Return the results
         new_data = {"face_names": face_names, "face_pos": face_positions}
         return json.dumps(new_data)
     else:
         return "MY GET!"
-
-
-
-
-# # When everything is done, release the capture
-# camera.release()
-# # cv2.destroyAllWindows()
-# face_rgn.stop_recognize_thread()
-# check_flag = False
 
 
 if __name__ == "__main__":
