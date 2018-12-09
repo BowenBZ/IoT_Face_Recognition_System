@@ -48,7 +48,6 @@ def check_status():
 
 
 # Configure the face recognition process
-filename = 'dataset/known_face.csv'
 face_rgn = FaceProcess(resize_frame=1, recognize_threshold=0.4, detect_interval=0)
 face_rgn.load_database(filename)
 

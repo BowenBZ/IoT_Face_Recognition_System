@@ -1,77 +1,75 @@
-# Home Assistance Robot Web Server Version
-This version is a web server based on flask. Users can use HTTP Post command to post their images and get back the positions of the users' faces and their names.
+# Home Assistance Robot - Web Server Version
+This version is a web server based on flask. Users can use HTTP Post command to upload images and get back the positions of the faces and the names after recognition.
 
 ## Function
-#### Face Detection
-* Store Your Faces  
-
-* Faces Detection  
-  The program can detect faces in the camera and use
-  square the around the faces. Multi-faces are supported.
+### Faces Detection  
+  The program can detect the position of faces in the image return the coordinate to the client. Multi-faces are supported.
   
-* Faces Recognition  
-  The camera can recognize who are in the camera. 
-  Multi-faces are supported.The labels will be given
-  near the square. The labels are
-  * `Unknown` if the faces hasn't been stored  
+### Faces Recognition  
+  The program can recognize who are people in the images. 
+  Multi-faces are supported. The labels are
+  * `Stranger` if the faces hasn't been stored  
   * the name that people gave when they store the faces
 
-#### IoT Control
-* Send Message to mobiles  
-  When strangers come to the house, a message
-  via Facebook Messager is given to their
-  mobiles.
-
+### Faces Management  
+  Users can save the face with specific name, and users can remove the existing faces.
 
 ## Install
-#### Software Requirments
+### Run locally
 * Install [face_recognition](https://github.com/ageitgey/face_recognition) package  
 
-* IFTTT settings
-    * Signup an account in [IFTTT](https://IFTTT.com) 
-      website.
-    * Go to `MyApplets` - `New Applet` - `this`, choose the `Webhooks` - `Revice a web request`, and give the 
-      event name and click `Create trigger`.
-    * choose `that` - `Face Messenger` - `Send Message`, 
-      and type what you want to send to your mobile, then click
-      `Create Action - Finish`. 
-    * Go back to the homepage and go to `MyApplets` - `Services` - `Webhooks` 
-    - `Documentation`
-     copy the link to the parameter of `url_stranger` in `home_assistance_robot.py`
+* Install [Flask](http://flask.pocoo.org/) package  
+  Notes:
+  * Check the language for non-Unicode programs is set to `English`. Sometimes the system unicode may cause some problem when you install the package
+  * You may also need to install `flask-cors` package if you encounter the CORS error when you runs it locally.
       
-* Use `PyCharm` to open this project, make sure that your
-  interpreter was set to the right path of your path and `dlib`, `face_recogniton`
-  were already installed.   
-   
-* Run home_assistance_robot.py
- 
+* Run main.py
 
-#### Hardware Requirements
-* A PC with python environment 
-* A Camera connected to the PC
-* A Mobile with Facebook Messenger
+#### Run on Google App Engine
 
-## Structure and Parameters
-* main.py  
-  The entry of all the functions. Use the `FaceProcess` class
-  from the `ImageProcess.py` file.
-  
-* ImageProcess.py  
-  Has the class of `FaceProcess`, can handle the function of 
-  camera detection and recognition.  
-  You can set the parameters, the parameters are as following:
-  * resize_frame  
-    Resize the frame when handle the frame. Vary from 0 to 1.
-  * recognize_threshold   
-    The threshold to recognize people. Vary from 0 to 1.
-  * detect_interval  
-    handle the image every detect_interval frames. Has no function
-    if recognize_mode is set to 0
-  * person_store_number  
-    the number of images to store in the database
-  * filename=filename  
-    the .csv file name  
+
+## How to use
+### Face Detection
+Send a HTTP POST to `http://your id or url/detect`, the format of send data should be like
+```
+send_data = {"img": img_data};
+```
+The img_data should be base64 format. It can be a RPG image or a Gray image. The structure of return data is as follows
+```
+return_data = {"face_pos": face_position}
+```
+The `face_position` is an array, the i-index of it is the i-index face's positions. 
+```
+face_position[i] = {top, left, bottom, right}
+```
+
+### Face Recognition  
+Send a HTTP GET to `http://your id or url/detect`. The return is the faces' names in previous images, which means this step should be done after the face detection. The format of return data is
+```
+return_data = {"face_name", face_names}
+```
+The `face_names` is an array, the i-index of it is the i-index name string in the previous uploaded images. 
+
+
+### Save Face
+Send a HTTP POST to `http://your id or url/save`. THe format of send data should be like
+```
+send_data = {"img": img_data,
+             "name": name,
+             "mode": "add"};
+```
+The img_data is the image with base64 format, the name is the person's name in the img_data, the `mode` should be set to `"add"`. The return data is `True` or `False`
+
+
+
+### Remove face
+Send a HTTP POST to `http://your id or url/save`. THe format of send data should be like
+```
+send_data = {"name": name,
+             "mode": "remove"};
+```
+The return data is `True` or `False`
+
     
-  Notes:  
-  I recommend you set the parameter to recognize_mode=1, detect_interval=2.
-  If it runs very slowly, you can set the parameter to recognize_mode=0.
+Notes:  
+I recommend you set the parameter to resize_frame=1, recognize_threshold=0.4, detect_interval=0
