@@ -104,3 +104,4 @@ venv.bak/
 .mypy_cache/
 
 Video
+known_face.csv
