@@ -105,3 +105,5 @@ venv.bak/
 Video
 .idea/workspace.xml
 dataset
+dataset/known_face.csv
+dataset/known_face.csv
