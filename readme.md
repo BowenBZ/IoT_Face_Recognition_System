@@ -1,6 +1,5 @@
-# Home Assistance Robot
-This robot is designed to help older people get a 
-smarter house with low cost.
+# Iot Face Recognition System
+This branch is the basic version of the system which can run in the PC. The web server version is in the other branch. The front end of this project is [here](https://github.com/BerwinZ/Home-Assistance-Robot-UI).
 
 ## Function
 #### Face Detection
